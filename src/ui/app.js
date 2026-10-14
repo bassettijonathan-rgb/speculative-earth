@@ -37,6 +37,7 @@
         S.seed = m.seed; S.co2Log = m.co2Log; S.metas = m.species; S.frames = []; S.cards = []; S.head = 0; S.view = 0; S.follow = true;
         S.region = null; S.rangeId = -1; map.setRange(null); map.setMarker(null); S.seenToast = new Set();
         $('#seed-input').value = S.seed;
+        $('#world-name').textContent = S.seed;
         renderGuide(); renderChronicle();
         break;
       case 'frame': onFrame(m); break;
@@ -637,6 +638,24 @@
     const s = ($('#seed-input').value || '').trim().replace(/[^A-Za-z0-9_-]/g, '') || randomSeed();
     newWorld(s, [[0, 280]], 0);
   });
+  // Header controls. Once a world has history, the first tap asks for a second
+  // tap, since restarting throws that history away.
+  function twoTap(btn, label, action) {
+    let armed = 0;
+    btn.addEventListener('click', () => {
+      if (S.head > 0 && !armed) {
+        btn.textContent = 'Tap again to confirm'; btn.classList.add('confirm');
+        armed = setTimeout(() => { armed = 0; btn.textContent = label; btn.classList.remove('confirm'); }, 3000);
+        return;
+      }
+      clearTimeout(armed); armed = 0; btn.textContent = label; btn.classList.remove('confirm');
+      S.after = null; closeSheet(); $('#toast').hidden = true;
+      action();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  twoTap($('#restart'), 'Restart', () => newWorld(S.seed, [[0, 280]], 0));
+  twoTap($('#new-random'), 'New world', () => { const s = randomSeed(); $('#seed-input').value = s; newWorld(s, [[0, 280]], 0); });
   $('#random-world').addEventListener('click', () => { const s = randomSeed(); $('#seed-input').value = s; newWorld(s, [[0, 280]], 0); });
   $('#copy-world').addEventListener('click', (e) => copy(code(S.view), e.currentTarget));
   $('#open-code').addEventListener('click', () => {

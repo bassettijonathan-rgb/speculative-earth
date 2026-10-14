@@ -47,6 +47,12 @@ button { font: inherit; color: inherit; }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .brand h1 { font: 600 clamp(28px, 6vw, 42px)/1 var(--serif); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 .brand p { margin: 4px 0 0; color: var(--fg-dim); font-size: 13px; }
+.world-bar { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+.world-name { font-size: 13px; color: var(--fg-dim); min-width: 0; overflow-wrap: anywhere; }
+.world-name b { font: 500 13px var(--mono); color: var(--fg); }
+.world-actions { display: flex; gap: 8px; }
+.btn.small { padding: 5px 12px; font-size: 13px; }
+.btn.confirm { background: var(--rust); border-color: var(--rust); color: #fff; }
 .clock { display: flex; align-items: baseline; gap: 10px; }
 .clock .num { font: 500 clamp(40px, 9vw, 60px)/.9 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--accent); }
 .clock .unit { font-size: 12px; color: var(--fg-dim); max-width: 11em; line-height: 1.25; text-transform: uppercase; letter-spacing: .08em; }
@@ -198,6 +204,13 @@ input[type=range]:disabled::-moz-range-thumb { background: var(--fg-faint); }
       <p>The humans are gone. Watch the planet carry on, and keep a field guide to what comes next.</p>
     </div>
     <div class="clock" aria-live="polite"><span class="num" id="t-num">0</span><span class="unit" id="t-label">million years after present</span></div>
+    <div class="world-bar">
+      <span class="world-name">World <b id="world-name">…</b></span>
+      <span class="world-actions">
+        <button class="btn small" id="restart" type="button">Restart</button>
+        <button class="btn small" id="new-random" type="button">New world</button>
+      </span>
+    </div>
   </header>
 
   <main class="stage">

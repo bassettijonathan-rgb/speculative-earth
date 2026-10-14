@@ -54,6 +54,12 @@ button { font: inherit; color: inherit; }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .brand h1 { font: 600 clamp(28px, 6vw, 42px)/1 var(--serif); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 .brand p { margin: 4px 0 0; color: var(--fg-dim); font-size: 13px; }
+.world-bar { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+.world-name { font-size: 13px; color: var(--fg-dim); min-width: 0; overflow-wrap: anywhere; }
+.world-name b { font: 500 13px var(--mono); color: var(--fg); }
+.world-actions { display: flex; gap: 8px; }
+.btn.small { padding: 5px 12px; font-size: 13px; }
+.btn.confirm { background: var(--rust); border-color: var(--rust); color: #fff; }
 .clock { display: flex; align-items: baseline; gap: 10px; }
 .clock .num { font: 500 clamp(40px, 9vw, 60px)/.9 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--accent); }
 .clock .unit { font-size: 12px; color: var(--fg-dim); max-width: 11em; line-height: 1.25; text-transform: uppercase; letter-spacing: .08em; }
@@ -205,6 +211,13 @@ input[type=range]:disabled::-moz-range-thumb { background: var(--fg-faint); }
       <p>The humans are gone. Watch the planet carry on, and keep a field guide to what comes next.</p>
     </div>
     <div class="clock" aria-live="polite"><span class="num" id="t-num">0</span><span class="unit" id="t-label">million years after present</span></div>
+    <div class="world-bar">
+      <span class="world-name">World <b id="world-name">…</b></span>
+      <span class="world-actions">
+        <button class="btn small" id="restart" type="button">Restart</button>
+        <button class="btn small" id="new-random" type="button">New world</button>
+      </span>
+    </div>
   </header>
 
   <main class="stage">
@@ -3978,6 +3991,7 @@ input[type=range]:disabled::-moz-range-thumb { background: var(--fg-faint); }
         S.seed = m.seed; S.co2Log = m.co2Log; S.metas = m.species; S.frames = []; S.cards = []; S.head = 0; S.view = 0; S.follow = true;
         S.region = null; S.rangeId = -1; map.setRange(null); map.setMarker(null); S.seenToast = new Set();
         $('#seed-input').value = S.seed;
+        $('#world-name').textContent = S.seed;
         renderGuide(); renderChronicle();
         break;
       case 'frame': onFrame(m); break;
@@ -4578,6 +4592,24 @@ input[type=range]:disabled::-moz-range-thumb { background: var(--fg-faint); }
     const s = ($('#seed-input').value || '').trim().replace(/[^A-Za-z0-9_-]/g, '') || randomSeed();
     newWorld(s, [[0, 280]], 0);
   });
+  // Header controls. Once a world has history, the first tap asks for a second
+  // tap, since restarting throws that history away.
+  function twoTap(btn, label, action) {
+    let armed = 0;
+    btn.addEventListener('click', () => {
+      if (S.head > 0 && !armed) {
+        btn.textContent = 'Tap again to confirm'; btn.classList.add('confirm');
+        armed = setTimeout(() => { armed = 0; btn.textContent = label; btn.classList.remove('confirm'); }, 3000);
+        return;
+      }
+      clearTimeout(armed); armed = 0; btn.textContent = label; btn.classList.remove('confirm');
+      S.after = null; closeSheet(); $('#toast').hidden = true;
+      action();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  twoTap($('#restart'), 'Restart', () => newWorld(S.seed, [[0, 280]], 0));
+  twoTap($('#new-random'), 'New world', () => { const s = randomSeed(); $('#seed-input').value = s; newWorld(s, [[0, 280]], 0); });
   $('#random-world').addEventListener('click', () => { const s = randomSeed(); $('#seed-input').value = s; newWorld(s, [[0, 280]], 0); });
   $('#copy-world').addEventListener('click', (e) => copy(code(S.view), e.currentTarget));
   $('#open-code').addEventListener('click', () => {

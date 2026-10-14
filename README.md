@@ -6,6 +6,7 @@ Plain JavaScript and Canvas, no dependencies and no backend. The simulation runs
 
 ## Playing
 
+- **Restart / New world.** The buttons under the title start the same world over from today, or grow a fresh random one. Once a world has history they ask for a second tap. The game reopens your last world when you come back.
 - **Advance / Play / Fast-forward.** Pick a step of 1, 2, 5 or 10 million years (My). *Advance* moves one step, *Play* keeps stepping, *Fast-forward* runs 50 My at full speed.
 - **Scrub back.** The slider runs over everything simulated so far. The strip above it is species diversity over time, with impacts and eruptions marked. While you are looking at the past, *Branch from here* rewinds the world to that moment so you can change it.
 - **CO₂.** Sets atmospheric carbon dioxide from the current moment on (3 °C per doubling). It is part of the world: share codes carry it.
