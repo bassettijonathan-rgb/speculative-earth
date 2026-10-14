@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>Creature sheet</title>
+<body style="background:#e9ece4;margin:0;font:12px sans-serif">
+<div id="g" style="display:grid;grid-template-columns:repeat(6,200px);gap:6px;padding:8px"></div>
+<script src="../src/core/math.js"></script><script src="../src/core/rng.js"></script><script src="../src/core/sphere.js"></script>
+<script src="../src/core/landmask.js"></script><script src="../src/core/earth.js"></script><script src="../src/core/tectonics.js"></script>
+<script src="../src/core/climate.js"></script><script src="../src/core/clades.js"></script><script src="../src/core/naming.js"></script>
+<script src="../src/core/life.js"></script><script src="../src/core/events.js"></script><script src="../src/core/world.js"></script>
+<script src="../src/core/lore.js"></script><script src="../src/ui/creature.js"></script>
+<script>
+const g = document.getElementById('g');
+function add(sp, label) {
+  const d = document.createElement('div'); d.style.background = '#f6f4ec';
+  const c = document.createElement('canvas'); c.width = 200; c.height = 140; d.appendChild(c);
+  const p = document.createElement('div'); p.textContent = label; p.style.padding = '2px 4px'; d.appendChild(p); g.appendChild(d);
+  SE.creature.draw(c.getContext('2d'), sp, 200, 140);
+}
+const mode = location.hash.slice(1);
+if (mode === 'sim') {
+  const w = new SE.World('gamma');
+  for (let i = 0; i < 60; i++) w.step();
+  const seen = new Set();
+  const list = w.life.species.filter(s => s.trans.length && s.trans[s.trans.length - 1].id === s.id).filter(s => { const k = s.clade + s.trans.map(x => x.k).join(); if (seen.has(k)) return false; seen.add(k); return true; });
+  list.slice(0, 48).forEach(s => add(s, s.genus + ' ' + s.epithet + ' — ' + s.common));
+} else SE.CLADES.forEach((c, i) => add({ id: i, bp: c.bp }, c.genus + ' ' + c.sp));
+</script>

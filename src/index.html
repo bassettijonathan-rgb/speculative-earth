@@ -1,0 +1,339 @@
+<title>Speculative Earth</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Humans are gone. Advance the Earth through millions of years and document what evolves.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #0b171e; --surface: #11222b; --surface-2: #172d37; --line: #234049; --fg: #e3ebe5; --fg-dim: #9db1b1; --fg-faint: #6f8788;
+  --accent: #8fd4c4; --accent-ink: #082027; --rust: #cf7148; --paper: #efe8d6; --paper-line: #d8cfb8; --paper-ink: #3b3326;
+  --map-bg: #091319; --tree-bg: #0e1c24; --shadow: 0 18px 50px rgba(0,0,0,.45);
+  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #edefe8; --surface: #f8f8f3; --surface-2: #e4e8df; --line: #cbd3c9; --fg: #16282e; --fg-dim: #52666a; --fg-faint: #7c8c8c;
+    --accent: #1d7a6c; --accent-ink: #ffffff; --rust: #a84a26; --paper: #f6f0e0; --paper-line: #ddd3bb; --paper-ink: #3b3326;
+    --map-bg: #cfd8d4; --tree-bg: #13232b; --shadow: 0 18px 50px rgba(20,40,40,.18); color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #edefe8; --surface: #f8f8f3; --surface-2: #e4e8df; --line: #cbd3c9; --fg: #16282e; --fg-dim: #52666a; --fg-faint: #7c8c8c;
+  --accent: #1d7a6c; --accent-ink: #ffffff; --rust: #a84a26; --paper: #f6f0e0; --paper-line: #ddd3bb; --paper-ink: #3b3326;
+  --map-bg: #cfd8d4; --tree-bg: #13232b; --shadow: 0 18px 50px rgba(20,40,40,.18); color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 40px; -webkit-text-size-adjust: 100%;
+}
+body.sheet-open { overflow: hidden; }
+button { font: inherit; color: inherit; }
+.app { max-width: 1440px; margin: 0 auto; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) {
+  .app { grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr); align-items: start; }
+  .app > header { grid-column: 1 / -1; }
+  #panel { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
+  #panel .panes { overflow: auto; min-height: 0; flex: 1; }
+}
+
+/* header */
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.brand h1 { font: 600 clamp(28px, 6vw, 42px)/1 var(--serif); margin: 0; letter-spacing: .005em; text-wrap: balance; }
+.brand p { margin: 4px 0 0; color: var(--fg-dim); font-size: 13px; }
+.clock { display: flex; align-items: baseline; gap: 10px; }
+.clock .num { font: 500 clamp(40px, 9vw, 60px)/.9 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--accent); }
+.clock .unit { font-size: 12px; color: var(--fg-dim); max-width: 11em; line-height: 1.25; text-transform: uppercase; letter-spacing: .08em; }
+
+/* stage */
+.stage { display: grid; gap: 12px; min-width: 0; }
+.map-wrap { position: relative; border-radius: 10px; overflow: hidden; background: var(--map-bg); box-shadow: var(--shadow); }
+#map { display: block; width: 100%; aspect-ratio: 2 / 1; touch-action: none; cursor: crosshair; --map-bg: #091319; }
+@media (max-width: 640px) { #map { aspect-ratio: 16 / 11; } }
+.map-tools { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+.map-tools button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,255,255,.18); background: rgba(8,20,26,.72); color: #e3ebe5; font-size: 18px; line-height: 1; cursor: pointer; backdrop-filter: blur(6px); }
+.range-banner { position: absolute; left: 8px; bottom: 8px; display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 10px; border-radius: 8px; background: rgba(8,20,26,.8); color: #e3ebe5; font-size: 13px; max-width: calc(100% - 60px); }
+.range-banner i { font-family: var(--serif); font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.range-banner span { color: #b9c9c6; }
+.range-banner button { border: 0; background: rgba(255,255,255,.12); color: inherit; border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(6,14,18,.35); pointer-events: none; }
+.busy span { font: 500 13px var(--mono); color: #e3ebe5; background: rgba(8,20,26,.82); padding: 6px 12px; border-radius: 99px; }
+.toast { position: absolute; left: 8px; right: 8px; top: 8px; max-width: 420px; background: rgba(9,20,26,.9); color: #e3ebe5; border: 1px solid rgba(143,212,196,.25); border-left: 3px solid #8fd4c4; border-radius: 8px; padding: 10px 34px 10px 12px; backdrop-filter: blur(8px); box-shadow: var(--shadow); animation: rise .35s ease-out; }
+.toast.k-impact, .toast.k-basalt { border-left-color: #e08a5c; }
+.toast.k-ice, .toast.k-thaw { border-left-color: #b9d4e2; }
+.toast .k { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: #a9c0bd; }
+.toast h3 { font: 600 20px/1.15 var(--serif); margin: 2px 0 4px; }
+.toast p { margin: 0; font-size: 13px; color: #c9d6d2; }
+.toast .x { position: absolute; top: 6px; right: 6px; border: 0; background: none; color: #a9c0bd; font-size: 18px; cursor: pointer; width: 28px; height: 28px; }
+.toast .go { margin-top: 8px; border: 1px solid rgba(143,212,196,.5); background: none; color: #8fd4c4; border-radius: 6px; padding: 3px 10px; font-size: 13px; cursor: pointer; }
+@media (max-width: 640px) { .toast p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } }
+@keyframes rise { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 99px; padding: 5px 11px; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip.link i { font-family: var(--serif); font-size: 15px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 12px; color: var(--fg-dim); min-height: 22px; }
+.legend .sw { display: inline-flex; align-items: center; gap: 5px; }
+.legend .sw i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.legend .ramp { flex: 1; min-width: 120px; max-width: 260px; height: 9px; border-radius: 5px; }
+.overlay-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.eyebrow { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--fg-dim); margin: 0 0 6px; }
+.timebar { display: grid; gap: 10px; }
+.slider-wrap { position: relative; height: 46px; }
+#spark { position: absolute; inset: 0 0 14px 0; width: 100%; height: 32px; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; margin: 0; }
+#time { position: absolute; left: 0; right: 0; bottom: 0; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; background: var(--line); border-radius: 2px; }
+input[type=range]::-moz-range-track { height: 4px; background: var(--line); border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); margin-top: -7px; border: 3px solid var(--bg); }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); }
+input[type=range]:disabled::-webkit-slider-thumb { background: var(--fg-faint); }
+input[type=range]:disabled::-moz-range-thumb { background: var(--fg-faint); }
+.time-meta { display: flex; justify-content: space-between; gap: 10px; font: 12px var(--mono); color: var(--fg-dim); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); border-radius: 8px; padding: 8px 14px; font-weight: 500; cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.ghost { background: transparent; }
+.step-chips { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.step-chips button { border: 0; background: transparent; color: var(--fg-dim); padding: 7px 10px; font: 500 13px var(--mono); cursor: pointer; }
+.step-chips button[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
+.step-label { font-size: 12px; color: var(--fg-dim); }
+.spacer { flex: 1; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; }
+@media (min-width: 640px) { .stats { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.stats div { min-width: 0; }
+.stats dt { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--fg-dim); }
+.stats dd { margin: 0; font: 500 20px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.stats dd.rust { color: var(--rust); }
+.climate { display: grid; gap: 6px; }
+.climate-row { display: flex; align-items: center; gap: 12px; }
+.climate-row label { font-weight: 500; white-space: nowrap; }
+#co2 { flex: 1; min-width: 0; }
+#co2-val { font: 500 13px var(--mono); min-width: 6.5em; text-align: right; }
+.note { font-size: 12px; color: var(--fg-dim); margin: 0; }
+.back-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* panel */
+#panel { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; scroll-margin-top: 10px; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: 1 0 auto; border: 0; background: none; padding: 12px 12px 10px; color: var(--fg-dim); font-weight: 500; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+.tabs .n { display: none; }
+@media (max-width: 520px) { .tabs .w { display: none; } .tabs .n { display: inline; } .tabs button { padding-inline: 8px; } }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.pane { padding: 14px; }
+.hint { color: var(--fg-dim); font-size: 14px; margin: 4px 0; max-width: 60ch; }
+.region-head h3 { font: 600 22px/1.1 var(--serif); margin: 0; }
+.region-head .meta { margin: 2px 0 10px; color: var(--fg-dim); font-size: 13px; }
+.realm { margin-top: 14px; }
+.species-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.species-list li { min-width: 0; }
+.sp-row { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--surface-2); border: 1px solid transparent; border-radius: 9px; padding: 6px 10px 6px 6px; cursor: pointer; }
+.sp-row:hover { border-color: var(--line); }
+.thumb { flex: none; background: var(--paper); border-radius: 6px; }
+.sp-txt { display: grid; min-width: 0; }
+.binomial { font: italic 600 18px/1.15 var(--serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.common { font-size: 13px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.facts { font-size: 12px; color: var(--fg-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-tools { display: flex; gap: 6px; justify-content: flex-end; margin-top: 4px; }
+.mini { border: 1px solid var(--line); background: none; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; color: var(--fg-dim); }
+.tree-wrap { position: relative; }
+#tree { display: block; width: 100%; height: min(62vh, 560px); touch-action: none; border-radius: 8px; --fg-dim: #a9bcbc; --accent: #9be0cf; --rust: #d77a50; --tree-bg: #0e1c24; }
+.tree-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: var(--fg-dim); }
+.tree-tools label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.tree-key { display: flex; gap: 12px; font-size: 12px; color: var(--fg-dim); margin-top: 8px; flex-wrap: wrap; }
+.tree-key i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+.chron { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ev-btn { width: 100%; text-align: left; display: grid; grid-template-columns: 4.5em 1fr; column-gap: 10px; background: none; border: 0; border-left: 2px solid var(--line); padding: 8px 4px 8px 10px; cursor: pointer; }
+.ev-impact .ev-btn, .ev-basalt .ev-btn { border-left-color: var(--rust); }
+.ev-evo .ev-btn { border-left-color: var(--accent); }
+.ev-t { font: 500 12px var(--mono); color: var(--fg-dim); grid-row: span 3; padding-top: 2px; }
+.ev-k { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--fg-faint); }
+.ev-title { font: 600 18px/1.2 var(--serif); }
+.ev-text { font-size: 13px; color: var(--fg-dim); }
+.form-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 14px; }
+.form-row input[type=text] { flex: 1; min-width: 0; width: 100%; max-width: 320px; background: var(--bg); border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 8px 10px; font: 14px var(--mono); }
+#share-out { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 13px var(--mono); }
+.about h3 { font: 600 20px var(--serif); margin: 18px 0 4px; }
+.about p, .about li { font-size: 14px; color: var(--fg-dim); max-width: 62ch; }
+.about ul { padding-left: 18px; }
+
+/* species sheet */
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(4,10,13,.6); display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); }
+@media (min-width: 760px) { .sheet { align-items: center; } }
+.sheet-card { background: var(--surface); width: min(640px, 100%); max-height: calc(100% - 24px - env(safe-area-inset-top, 0px)); overflow: auto; border-radius: 16px 16px 0 0; box-shadow: var(--shadow); padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px)); animation: up .28s ease-out; }
+@media (min-width: 760px) { .sheet-card { border-radius: 14px; } }
+@keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.plate { background: var(--paper); border-bottom: 1px solid var(--paper-line); display: grid; place-items: center; padding: 10px 0 4px; position: relative; }
+.plate::after { content: "Fig."; position: absolute; left: 14px; bottom: 6px; font: italic 500 14px var(--serif); color: var(--paper-ink); opacity: .6; }
+.sheet-close { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(59,51,38,.12); color: var(--paper-ink); font-size: 20px; cursor: pointer; z-index: 1; }
+.sheet-body { padding: 14px 18px 0; display: grid; gap: 12px; }
+.sheet-body h2 { margin: 0; font: italic 600 30px/1.05 var(--serif); text-wrap: balance; }
+.sheet-body .sub { margin: 2px 0 0; font-size: 15px; }
+.status { font: 500 12px var(--mono); }
+.status.alive { color: var(--accent); }
+.status.extinct { color: var(--rust); }
+.facts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; margin: 0; border-block: 1px solid var(--line); padding-block: 10px; }
+.facts-grid dt { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--fg-dim); }
+.facts-grid dd { margin: 0; font-size: 14px; }
+#sheet-text section { margin-bottom: 10px; }
+#sheet-text p { margin: 0; font-size: 15px; max-width: 64ch; }
+.sheet-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sheet-actions .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Speculative Earth</h1>
+      <p>The humans are gone. Watch the planet carry on, and keep a field guide to what comes next.</p>
+    </div>
+    <div class="clock" aria-live="polite"><span class="num" id="t-num">0</span><span class="unit" id="t-label">million years after present</span></div>
+  </header>
+
+  <main class="stage">
+    <div class="map-wrap">
+      <canvas id="map" aria-label="Map of the planet. Tap a place to see the species living there."></canvas>
+      <div class="map-tools"><button id="zoom-in" type="button" aria-label="Zoom in">+</button><button id="zoom-out" type="button" aria-label="Zoom out">−</button></div>
+      <div class="range-banner" id="range-banner" hidden><i id="range-name"></i><span id="range-note">range</span><button id="range-clear" type="button">Clear</button></div>
+      <div class="busy" id="busy" hidden><span id="busy-text">Simulating…</span></div>
+      <div class="toast" id="toast" hidden role="status">
+        <div class="k" id="toast-kind"></div>
+        <h3 id="toast-title"></h3>
+        <p id="toast-text"></p>
+        <button class="go" id="toast-go" type="button" hidden>Open in field guide</button>
+        <button class="x" id="toast-close" type="button" aria-label="Dismiss">×</button>
+      </div>
+    </div>
+    <div class="overlay-row">
+      <div class="chips" role="group" aria-label="Map overlay">
+        <button class="chip" type="button" data-mode="biome" aria-pressed="true">Biomes</button>
+        <button class="chip" type="button" data-mode="temp" aria-pressed="false">Temperature</button>
+        <button class="chip" type="button" data-mode="rich" aria-pressed="false">Species richness</button>
+        <button class="chip" type="button" data-mode="plate" aria-pressed="false">Plates</button>
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+
+    <section class="card timebar" aria-label="Time">
+      <div class="slider-wrap">
+        <canvas id="spark" aria-hidden="true"></canvas>
+        <input type="range" id="time" min="0" max="1" value="0" step="1" aria-label="Scrub through time">
+      </div>
+      <div class="time-meta"><span>0 My</span><span id="t-head">0 My simulated</span></div>
+      <div class="controls">
+        <span class="step-label">Step</span>
+        <div class="step-chips" role="group" aria-label="Step size">
+          <button type="button" data-step="1" aria-pressed="false">1</button>
+          <button type="button" data-step="2" aria-pressed="false">2</button>
+          <button type="button" data-step="5" aria-pressed="true">5</button>
+          <button type="button" data-step="10" aria-pressed="false">10</button>
+        </div>
+        <button class="btn primary" id="advance" type="button">Advance 5 My</button>
+        <button class="btn" id="play" type="button" aria-pressed="false">Play</button>
+        <button class="btn ghost" id="ff" type="button">Fast-forward 50 My</button>
+      </div>
+      <div class="back-row">
+        <button class="btn" id="to-present" type="button" hidden>Back to the latest</button>
+        <button class="btn" id="branch" type="button" hidden>Branch from here</button>
+      </div>
+      <dl class="stats">
+        <div><dt>Species</dt><dd id="st-alive">–</dd></div>
+        <div><dt>Speciations</dt><dd id="st-spec">–</dd></div>
+        <div><dt>Extinctions</dt><dd class="rust" id="st-ext">–</dd></div>
+        <div><dt>CO₂ ppm</dt><dd id="st-co2">–</dd></div>
+        <div><dt>ΔT °C</dt><dd id="st-dt">–</dd></div>
+        <div><dt>Plates</dt><dd id="st-plates">–</dd></div>
+      </dl>
+      <div class="climate">
+        <div class="climate-row"><label for="co2">CO₂</label><input type="range" id="co2" min="-1" max="3" step="0.05" value="0"><span id="co2-val">280 ppm</span></div>
+        <p class="note" id="co2-note">Carbon dioxide from now on. More CO₂, warmer world.</p>
+      </div>
+    </section>
+  </main>
+
+  <aside id="panel">
+    <div class="tabs" role="tablist">
+      <button role="tab" type="button" data-tab="guide" aria-selected="true"><span class="w">Field guide</span><span class="n">Guide</span></button>
+      <button role="tab" type="button" data-tab="tree" aria-selected="false"><span class="w">Tree of life</span><span class="n">Tree</span></button>
+      <button role="tab" type="button" data-tab="best" aria-selected="false">Bestiary</button>
+      <button role="tab" type="button" data-tab="chron" aria-selected="false">Chronicle</button>
+      <button role="tab" type="button" data-tab="world" aria-selected="false">World</button>
+    </div>
+    <div class="panes">
+      <section class="pane" role="tabpanel" id="pane-guide"><div id="guide-body"></div></section>
+      <section class="pane" role="tabpanel" id="pane-tree" hidden>
+        <div class="tree-tools">
+          <label><input type="checkbox" id="hide-extinct"> Living lineages only</label>
+          <span class="chips"><button class="chip" id="tree-out" type="button" aria-label="Zoom out">−</button><button class="chip" id="tree-in" type="button" aria-label="Zoom in">+</button></span>
+        </div>
+        <div class="tree-wrap"><canvas id="tree" aria-label="Phylogeny of every species in this world"></canvas></div>
+        <div class="tree-key"><span><i style="background:#86b8d8"></i>living, coloured by group</span><span><i style="background:#d77a50"></i>extinct †</span><span>Pinch or scroll to zoom. Tap a line.</span></div>
+      </section>
+      <section class="pane" role="tabpanel" id="pane-best" hidden>
+        <p class="eyebrow" id="best-count"></p>
+        <div id="best-body"></div>
+      </section>
+      <section class="pane" role="tabpanel" id="pane-chron" hidden><div id="chron-body"></div></section>
+      <section class="pane" role="tabpanel" id="pane-world" hidden>
+        <h4 class="eyebrow">This world</h4>
+        <div class="form-row"><input type="text" id="seed-input" aria-label="Seed" spellcheck="false" autocomplete="off"><button class="btn" id="new-world" type="button">Grow this seed</button><button class="btn ghost" id="random-world" type="button">Random seed</button></div>
+        <p class="note">The same seed always grows the same world. Changing CO₂ is part of the world too, and travels in share codes.</p>
+        <div class="form-row"><button class="btn" id="copy-world" type="button">Copy share code for this moment</button></div>
+        <h4 class="eyebrow">Open a share code</h4>
+        <div class="form-row"><input type="text" id="code-input" placeholder="SE1:seed:time" aria-label="Share code" spellcheck="false" autocomplete="off"><button class="btn" id="open-code" type="button">Open</button></div>
+        <p class="note" id="code-msg"></p>
+        <textarea id="share-out" rows="2" hidden readonly aria-label="Share code to copy"></textarea>
+        <div class="about">
+          <h3>How this world works</h3>
+          <ul>
+            <li>The planet is a grid of 10,242 cells about 240 km apart. A dozen rigid plates drift on fixed rotation poles, collide to raise mountains, subduct, rift apart and weld together.</li>
+            <li>Climate comes from latitude, height, distance from the sea, prevailing winds and CO₂. It is recalculated every million years, not seasonally.</li>
+            <li>Life starts from 36 real survivors of today, from rats and crows to grasses and krill. Each species has a range, a body size, a diet and a temperature it likes. Species split when their range is cut in two or when part of the population takes up a new way of life, and die out when the land under them changes faster than they can follow.</li>
+            <li>Every world is one million-year tick at a time, from one random seed, so your step size never changes the outcome.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </aside>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <article class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheet-binomial">
+    <div class="plate"><button class="sheet-close" id="sheet-close" type="button" aria-label="Close">×</button><div id="sheet-plate"></div></div>
+    <div class="sheet-body">
+      <div>
+        <h2 id="sheet-binomial"></h2>
+        <p class="sub" id="sheet-common"></p>
+        <p class="status" id="sheet-status"></p>
+      </div>
+      <dl class="facts-grid" id="sheet-facts"></dl>
+      <div class="sheet-actions">
+        <button class="btn" id="sheet-save" type="button" aria-pressed="false">Add to bestiary</button>
+        <button class="btn" id="sheet-range" type="button">Show range</button>
+        <button class="btn" id="sheet-tree" type="button">Find in tree</button>
+        <button class="btn ghost" id="sheet-share" type="button">Copy share code</button>
+      </div>
+      <div id="sheet-text"></div>
+    </div>
+  </article>
+</div>
+
+<script id="se-core">
+/*@CORE@*/
+</script>
+<script type="text/plain" id="se-worker">
+/*@WORKER@*/
+</script>
+<script>
+/*@UI@*/
+</script>

@@ -1,0 +1,11 @@
+{
+  "name": "speculative-earth",
+  "version": "1.0.0",
+  "description": "A browser game about the Earth after humans: drifting continents, changing climate, and the animals that evolve next.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/run200.js"
+  }
+}
